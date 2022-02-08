@@ -1,5 +1,35 @@
 # Changelog
 
+## **2022.2.6-0.1.1** - 2022-02-08
+
+Python sunsynk module 0.1.1:
+
+- Fix debug print
+
+Sunsynk Add-On:
+
+- Improve exception handling on read
+
+## **2022.2.6-0.1.0** - 2022-02-06
+
+- Timeout on first read
+
+## **2022.2.5-0.1.0** - 2022-02-05
+
+Major update
+
+Python sunsynk module 0.1.0:
+
+- Modified definitions
+- Writing registers
+
+Sunsynk Add-On:
+
+- Modify settings with presets (BETA)
+- New MQTT select entity
+- No more restart on Timeouts
+- Filter updates (support strings)
+
 ## **2022.1.26-0.0.8** - 2022-01-26
 
 - Added grid_voltage
