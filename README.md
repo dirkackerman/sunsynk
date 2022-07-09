@@ -22,7 +22,7 @@ pip install sunsynk
 
 For the Add-On you require Home Assistant OS and a RS-485 adaptor to connect to your Sunsynk inverter. Sensors are read using the Modbus protocol and sent to a MQTT server. Below an example of the HomeAssistant Energy management dashboard using sensors from the Sunsynk.
 
-![HASS Energy management](./hass-addon-sunsynk/energy.png)
+![HASS Energy management](./images/energy.png)
 
 ### Add-On Installation
 
@@ -54,10 +54,16 @@ If the Inverter is far from the server/SBC running Home Assistant, you have seve
 
 There are several inverters that are rebranded Deye inverters, so you might have success with other inverter brands as well, please add your inverter by editing this file and creating a Pull Request if you are successful.
 
-| Inverter Model | Battery     | Version  | User          | Port(s)                    |
-| -------------- | ----------- | -------- | ------------- | -------------------------- |
-| Sunsynk 5.5kW  | Hubble AM-2 | beta/all | @kellerza     | BMS485 (top left)          |
-| Sunsynk 8.8kW  | BSL 8.2 kWH | 0.0.8    | @dirkackerman | RS485 (1 in image below)   |
+| Inverter Model | Battery           | Version  | User          | Port(s)                    |
+| -------------- | ----------------- | -------- | ------------- | -------------------------- |
+| Sunsynk 3.6kW  | Sunsynk SSLB1     | beta/all | @reedy        | BMS485 (top left)          |
+| Sunsynk 5.5kW  | Hubble AM-2       | beta/all | @kellerza     | BMS485 (top left)          |
+| Sunsynk 8.8kW  | BSL 8.2 kWH       | 0.0.8    | @dirkackerman | RS485 (1 in image below)   |
+| Deye  8kW      | Pylontech US3000C | 0.1.3dev | @Kladrie      | RS485 (top left)           |
+| Turbo-E   5kW  | DIY with JKBMS    | 0.1.4    | @agtconf      | BMS485 (top left)          |           
+### Sunsynk 3.6kW Inverter
+
+<img src="./images/inv-ss-3-6kw.png" width="80%">
 
 ### Sunsynk 5.5kW Inverter
 Tested with: USB-to-RS485 adaptor sourced from Banggood, very similar to [this](https://www.robotics.org.za/RS485-MINI?search=rs485).
@@ -65,9 +71,19 @@ Tested with: USB-to-RS485 adaptor sourced from Banggood, very similar to [this](
 NOTE: RJ-45 port marked **RS485** (bottom right) does not work.
 
 ### Sunsynk 8.8kW Inverter
-![image](https://user-images.githubusercontent.com/10972519/152020379-89f83c00-5fa4-4624-b204-0133cff8bdb2.png)
+<img src="./images/inv-ss-8kw.png" width="80%">
+
 
 Tested with: USB-to-485 adaptor sourced from Micro Robotics, [here](https://www.robotics.org.za/index.php?route=product/product&product_id=5947)
+
+### Deye 8kW Inverter
+
+<img src="./images/inv-deye-8kw.png" width="80%">
+
+RS485 is the blue line - top left, as with the Sunsynk inverters. Yellow is the CAN-comms with the Pylontech batteries
+
+### Turbo-Energy 5kW Inverter
+Tested with: USB-to-RS485 adaptor sourced from Aliexpress, very similar to [this](https://www.robotics.org.za/RS485-3P).
 
 ## Hardware
 The RJ-45 plug on the inverter side is crimped according to [T568A](https://en.wikipedia.org/wiki/ANSI/TIA-568#Wiring). RS485 requires a twisted pair, so works well with CAT5 network cable and the RJ-45 connectors.
@@ -79,6 +95,27 @@ The RJ-45 plug on the inverter side is crimped according to [T568A](https://en.w
 |              3*             |         Orange-White        |          GND            |
 
 \* tested on Sunsynk 8.8kW only
+
+<img src="./images/USB-RS485.jpg" width="45%">
+<img src="./images/RS485-and-RJ45.jpg" width="45%">
+
+## Fault finding
+
+If you fail to get a reply from the inverter, please check the following
+
+### (a) Only a single connection to the serial port 
+
+Ensure you only hve a single addon connected to the serial port. The following can all potentially access the USB port: mbusd, Node RED, the normal and dev addon verison.
+
+If you need to have multiple connections to the serial port: ONLY connect mbusd to the serial port. Connect all addons to mbusd (e.g. tcp://192.168.1.x:503 )
+
+### (b) Check the Modbus Server ID
+
+Ensure the Modbus server ID (`MODBUS_SERVER_ID` config setting) setting matches the configured **Modbus SN** value of the inverter
+
+View/update the Modbus server ID on your inverter under "Advanced Settings" / "Multi-Inverter"
+
+<img src="./images/modbus_sn.png" width="80%">
 
 ## Credits
 

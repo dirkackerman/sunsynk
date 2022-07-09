@@ -159,6 +159,7 @@ class MQTTClient:
             if self.availability_topic:
                 self._client.will_set(self.availability_topic, "offline", retain=True)
 
+            _LOGGER.info("MQTT: Connecting to %s@%s:%s", username, host, port)
             self._client.connect_async(host=host, port=port)
             self._client.loop_start()
 
@@ -168,7 +169,7 @@ class MQTTClient:
                 retry -= 0
             if not retry:
                 raise ConnectionError(
-                    f"Could not connect to MQTT server {username}@{host}:{port}"
+                    f"MQTT: Could not connect to {username}@{host}:{port}"
                 )
             # publish online (Last will sets offline on disconnect)
             if self.availability_topic:
@@ -225,6 +226,8 @@ class MQTTClient:
             _LOGGER.debug("publish %s", ent.topic)
             await self.publish(ent.topic, payload=dumps(ent.asdict), retain=True)
 
+        await asyncio.sleep(0.01)
+
         if task_remove:
             await task_remove
 
@@ -232,9 +235,8 @@ class MQTTClient:
         self, device_ids: Sequence[str], keep_topics: Sequence[str], sleep: float = 0.5
     ) -> None:
         """Remove previously discovered entities."""
-        _loop = asyncio.get_running_loop()
 
-        def __on_message(_client: Client, _userdata: Any, message: MQTTMessage) -> None:
+        def __on_message(client: Client, _userdata: Any, message: MQTTMessage) -> None:
             if not message.retain:
                 return
             topic = str(message.topic)
@@ -242,8 +244,9 @@ class MQTTClient:
             _LOGGER.debug("Rx retained msg: topic=%s -- device=%s", topic, device)
             if device not in device_ids or topic in keep_topics:
                 return
-            _LOGGER.warning("Removing HASS MQTT discovery info %s", topic)
-            _loop.create_task(self.publish(topic, None, retain=True))
+            _LOGGER.info("Removing HASS MQTT discovery info %s", topic)
+            # Not in the event loop, execute directly
+            client.publish(topic=topic, payload=None, qos=1, retain=True)
 
         self._client.on_message = __on_message
 
@@ -270,7 +273,8 @@ class MQTTClient:
                 return
             payload = message.payload.decode("utf-8")
             if inspect.iscoroutinefunction(handler):
-                _loop.create_task(handler(payload))
+                coro = handler(payload)
+                _loop.call_soon_threadsafe(lambda: _loop.create_task(coro))
             else:
                 handler(payload)
 

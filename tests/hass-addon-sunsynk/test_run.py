@@ -10,17 +10,15 @@ import pytest
 from tests.conftest import import_module
 
 _LOGGER = logging.getLogger(__name__)
+MOD_FOLDER = "hass-addon-sunsynk"
 
 
 @pytest.fixture
 def run() -> ModuleType:
-    """Import the run module."""
-    runmod = import_module("run", "hass-addon-sunsynk")
-    _LOGGER.warning("Module run: %s", dir(runmod))
-    return runmod
+    """Import module."""
+    return import_module("run", MOD_FOLDER)
 
 
-@pytest.mark.addon
 def test_run(run):
     """Test Run."""
     assert not run.SENSORS
@@ -33,8 +31,10 @@ def test_run(run):
     assert run.OPT.mqtt_host == "host1"
     assert run.OPT.mqtt_password == "passw"
 
+    run.SENSORS.clear()
+    run.OPT.mqtt_host = ""
 
-@pytest.mark.addon
+
 def test_versions(run):
     """Test versions.
 
@@ -46,17 +46,14 @@ def test_versions(run):
     def _get_version(filename, regex):
         txt = Path(filename).read_text()
         res = re.compile(regex).search(txt)
-        assert res, "version not found in setup.py"
+        assert res, f"version not found in {filename}"
         return res.group(1)
 
-    v_setup = _get_version(
-        filename="setup.py",
-        regex=r'VERSION = "(.+)"',
-    )
+    v_setup = "0.1.4"  # last version
 
     v_docker = _get_version(
         filename="hass-addon-sunsynk/Dockerfile",
-        regex=r"sunsynk==(.+)",
+        regex=r"sunsynk\[.+\]==(.+)",
     )
 
     v_config = _get_version(
